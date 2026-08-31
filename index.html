@@ -80,9 +80,14 @@
   .progress[data-scene="0"] span{ background:rgba(74,41,26,.25); }
   .progress[data-scene="0"] span:nth-child(1){ background:var(--maroon); }
 
-  /* portal — the "dive into the envelope" transition */
+  /* portal — the "dive into the envelope" transition. Positioned
+     absolute within #scene0 (not fixed to the viewport) and placed
+     first in that scene's markup, so normal paint order keeps the
+     envelope drawn on top of it as it expands — the darkness reads as
+     rising up from behind/inside the envelope rather than a sheet
+     wiping over the whole screen. */
   .portal{
-    position:fixed;
+    position:absolute;
     top:0; left:0;
     width:54px; height:54px;
     margin:-27px 0 0 -27px;
@@ -91,13 +96,31 @@
     transform:scale(0);
     opacity:1;
     pointer-events:none;
-    z-index:200;
-    transition:transform .65s cubic-bezier(.55,0,.85,.35);
+    transition:transform .8s cubic-bezier(.5,0,.75,.4);
   }
   .portal.expand{ transform:scale(100); }
-  .portal.fade{ transition:opacity .5s ease-out; opacity:0; }
   @media (prefers-reduced-motion:reduce){
     .portal{ transition:none !important; }
+  }
+
+  /* the heart "emerging" from the envelope's opening, growing at the
+     seal's position right up until the cut to scene 2 */
+  .portal-heart{
+    position:absolute;
+    top:0; left:0;
+    width:70px;
+    margin:-35px 0 0 -35px;
+    opacity:0;
+    transform:scale(.2);
+    filter:drop-shadow(0 0 30px rgba(255,40,70,.4));
+    transition:transform .75s cubic-bezier(.3,.75,.35,1), opacity .4s ease-out;
+  }
+  .portal-heart.grow{
+    opacity:1;
+    transform:scale(2.3);
+  }
+  @media (prefers-reduced-motion:reduce){
+    .portal-heart{ transition:none !important; }
   }
 
   /* back button */
@@ -477,8 +500,6 @@
 </head>
 <body>
 
-<div class="portal" id="portal" aria-hidden="true"></div>
-
 <button class="back-btn" id="backBtn" aria-label="Go back" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4 L7 12 L15 20"/></svg>
 </button>
@@ -491,6 +512,11 @@
 
   <!-- ============ SCENE 1 ============ -->
   <section class="scene scene-envelope" id="scene0">
+    <!-- sits behind the envelope in normal paint order, so as it expands
+         it reads as darkness rising up from behind/inside the envelope,
+         rather than a layer painted over the top of it -->
+    <div class="portal" id="portal" aria-hidden="true"></div>
+
     <div class="envelope-stage">
       <div class="envelope" id="envelope">
         <div class="envelope-shadow"></div>
@@ -508,6 +534,24 @@
     <div class="envelope-caption">
       <p class="hint">tap the heart</p>
       <div class="chevron" style="margin-left:auto;margin-right:auto;color:#7a1526;"></div>
+    </div>
+
+    <!-- the heart that "comes out of" the envelope opening, grown in
+         place at the seal's position right before the cut to scene 2 -->
+    <div class="portal-heart" id="portalHeart" aria-hidden="true">
+      <svg viewBox="0 0 200 190" width="100%">
+        <defs>
+          <radialGradient id="portalHeartGrad" cx="35%" cy="28%" r="75%">
+            <stop offset="0%" stop-color="#ff7a86"/>
+            <stop offset="55%" stop-color="#d92e46"/>
+            <stop offset="100%" stop-color="#7a0f22"/>
+          </radialGradient>
+        </defs>
+        <path d="M92,10 C90,2 88,-4 84,2 C81,7 84,14 90,18 Z" fill="#8c1226"/>
+        <path d="M108,10 C110,2 112,-4 116,2 C119,7 116,14 110,18 Z" fill="#8c1226"/>
+        <path d="M100,178 C40,128 10,93 10,60 C10,30 35,8 65,8 C82,8 95,18 100,36 C105,18 118,8 135,8 C165,8 190,30 190,60 C190,93 160,128 100,178 Z" fill="url(#portalHeartGrad)"/>
+        <ellipse cx="68" cy="42" rx="26" ry="16" fill="#ffffff" opacity=".22"/>
+      </svg>
     </div>
   </section>
 
@@ -616,6 +660,7 @@
     if(index === 0){
       // reset the envelope so it's ready to be opened again
       envelope.classList.remove('open');
+      resetPortal();
     }
   }
 
@@ -625,6 +670,13 @@
   var envelope = document.getElementById('envelope');
   var sealHeart = document.getElementById('sealHeart');
   var portal = document.getElementById('portal');
+  var portalHeart = document.getElementById('portalHeart');
+
+  function resetPortal(){
+    portal.classList.remove('expand');
+    portalHeart.classList.remove('grow');
+  }
+
   sealHeart.addEventListener('click', function(){
     if(envelope.classList.contains('open')) return;
     envelope.classList.add('open');
@@ -635,24 +687,26 @@
         goTo(1);
         return;
       }
-      // dive through the envelope's opening: a black portal expands from
-      // the seal's position to fill the screen, we cut to scene 1 behind
-      // it (hidden by the full-black cover), then let it dissolve away —
-      // reads as "going inside" rather than the usual vertical swipe.
+      // Dive through the envelope's opening: a black disc expands from
+      // behind the envelope (see markup order in #scene0) until it
+      // covers the screen, while a heart grows at that same spot as if
+      // emerging from inside — then we cut to scene 2 (already black,
+      // with the same heart waiting) once both are well underway.
       var rect = sealHeart.getBoundingClientRect();
-      portal.style.left = (rect.left + rect.width / 2) + 'px';
-      portal.style.top = (rect.top + rect.height / 2) + 'px';
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top + rect.height / 2;
+      portal.style.left = cx + 'px';
+      portal.style.top = cy + 'px';
+      portalHeart.style.left = cx + 'px';
+      portalHeart.style.top = cy + 'px';
+
       portal.classList.add('expand');
+      setTimeout(function(){ portalHeart.classList.add('grow'); }, 180);
 
       setTimeout(function(){
         goTo(1, true);
-        setTimeout(function(){
-          portal.classList.add('fade');
-          setTimeout(function(){
-            portal.classList.remove('expand', 'fade');
-          }, 550);
-        }, 80);
-      }, 650);
+        setTimeout(resetPortal, 100);
+      }, 900);
     }, openDelay);
   });
 
