@@ -58,7 +58,7 @@
   .progress{
     position:fixed;
     left:50%;
-    bottom:clamp(16px,4vh,32px);
+    top:calc(env(safe-area-inset-top) + 37px);
     transform:translateX(-50%);
     display:flex;
     gap:10px;
@@ -106,18 +106,21 @@
   /* the heart "emerging" from the envelope's opening, growing at the
      seal's position right up until the cut to scene 2 */
   .portal-heart{
+    --grow-scale: 2.3; /* overwritten from JS to exactly match the real
+                          scene-2 heart's rendered size, so there's no
+                          visible size jump at the cut */
     position:absolute;
     top:0; left:0;
     width:70px;
     margin:-35px 0 0 -35px;
     opacity:0;
     transform:scale(.2);
-    filter:drop-shadow(0 0 30px rgba(255,40,70,.4));
+    filter:drop-shadow(0 0 40px rgba(255,40,70,.35)) drop-shadow(0 20px 30px rgba(0,0,0,.6));
     transition:transform .75s cubic-bezier(.3,.75,.35,1), opacity .4s ease-out;
   }
   .portal-heart.grow{
     opacity:1;
-    transform:scale(2.3);
+    transform:scale(var(--grow-scale));
   }
   @media (prefers-reduced-motion:reduce){
     .portal-heart{ transition:none !important; }
@@ -428,6 +431,10 @@
   .scene-final{
     background:linear-gradient(180deg, #2c1f3e 0%, #6a3552 45%, #c97b6d 78%, #e8b96b 100%);
     color:#fff;
+    overflow-y:auto;
+    justify-content:flex-start;
+    padding-top:calc(env(safe-area-inset-top) + 76px);
+    padding-bottom:32px;
   }
   .stars{ position:absolute; inset:0; overflow:hidden; }
   .star{
@@ -495,6 +502,103 @@
 
   @media (max-width:380px){
     .chat-cloud{ right:-38%; padding:10px 14px; }
+  }
+
+  /* reply form — sends straight to Ahnaf via Web3Forms */
+  .reply-wrap{
+    position:relative;
+    z-index:2;
+    width:min(90vw, 400px);
+    margin-top:clamp(30px,7vh,52px);
+  }
+  .reply-heading{
+    text-align:center;
+    font-family:'Georgia','Times New Roman',serif;
+    font-style:italic;
+    font-size:clamp(15px,2.4vw,18px);
+    color:#f6e9dc;
+    margin:0 0 16px;
+    opacity:.9;
+  }
+  .reply-form{ display:flex; flex-direction:column; gap:13px; }
+  .reply-field label{
+    display:block;
+    font-size:.68rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    font-weight:600;
+    margin-bottom:6px;
+    color:#eccf94;
+  }
+  .reply-input-wrap{
+    position:relative;
+    border-radius:12px;
+    padding:1.5px;
+    background:rgba(201,162,39,.35);
+    transition:background .3s, box-shadow .3s;
+  }
+  .reply-input-wrap:focus-within{
+    background:linear-gradient(135deg,#eccf94,rgba(201,162,39,.75),#eccf94);
+    box-shadow:0 0 22px rgba(201,162,39,.3);
+  }
+  .reply-input-wrap input,
+  .reply-input-wrap textarea{
+    width:100%;
+    padding:11px 14px;
+    background:rgba(20,10,22,.78);
+    border:none;
+    border-radius:10.5px;
+    color:#faf6ec;
+    font-family:'Poppins', sans-serif;
+    font-size:.9rem;
+    outline:none;
+    display:block;
+  }
+  .reply-input-wrap input::placeholder,
+  .reply-input-wrap textarea::placeholder{ color:rgba(250,246,236,.35); }
+  .reply-input-wrap textarea{ min-height:96px; resize:vertical; }
+
+  .reply-submit{
+    position:relative;
+    overflow:hidden;
+    align-self:center;
+    margin-top:4px;
+    padding:11px 32px;
+    background:linear-gradient(100deg,var(--maroon) 0%,var(--gold) 50%,var(--maroon) 100%);
+    color:#fff;
+    border:none;
+    border-radius:100px;
+    font-family:'Poppins', sans-serif;
+    font-weight:600;
+    font-size:.85rem;
+    letter-spacing:.03em;
+    cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.35);
+    transition:transform .25s;
+  }
+  .reply-submit:hover{ transform:scale(1.05); }
+  .reply-submit:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+  .reply-shimmer{
+    position:absolute; top:0; left:0;
+    width:50%; height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.35),transparent);
+    animation:replyShimmer 2.6s ease-in-out infinite;
+  }
+  @keyframes replyShimmer{
+    0%{ transform:translateX(-100%); }
+    100%{ transform:translateX(200%); }
+  }
+  .reply-status{
+    font-size:.82rem;
+    text-align:center;
+    margin-top:2px;
+    min-height:1.2em;
+  }
+  .reply-status.success{ color:#8fd6a8; }
+  .reply-status.error{ color:#f2a1a1; }
+
+  @media (prefers-reduced-motion:reduce){
+    .reply-shimmer{ animation:none !important; }
   }
 </style>
 </head>
@@ -616,6 +720,39 @@
         <div class="chat-tail2"></div>
       </div>
     </div>
+
+    <div class="reply-wrap">
+      <p class="reply-heading">Write back?</p>
+      <form class="reply-form" id="replyForm">
+        <!-- Web3Forms — same access key/service used on Ahnaf's portfolio
+             site, routed to ahnafclash17@gmail.com -->
+        <input type="hidden" name="access_key" value="eecb91c7-df3e-459b-b194-7972ccfd29ee">
+        <input type="hidden" name="subject" value="A reply to your letter">
+        <input type="hidden" name="from_name" value="Letter Day">
+        <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+
+        <div class="reply-field">
+          <label for="replyName">Your name</label>
+          <div class="reply-input-wrap">
+            <input type="text" id="replyName" name="name" placeholder="Your name" autocomplete="name">
+          </div>
+        </div>
+
+        <div class="reply-field">
+          <label for="replyMessage">Your reply <span aria-hidden="true">*</span></label>
+          <div class="reply-input-wrap">
+            <textarea id="replyMessage" name="message" placeholder="Write back..." required></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="reply-submit" id="replySubmit">
+          <span class="reply-shimmer"></span>
+          <span id="replySubmitLabel">Send reply</span>
+        </button>
+
+        <div class="reply-status" id="replyStatus" role="status"></div>
+      </form>
+    </div>
   </section>
 
 </div>
@@ -699,6 +836,18 @@
       portal.style.top = cy + 'px';
       portalHeart.style.left = cx + 'px';
       portalHeart.style.top = cy + 'px';
+
+      // Match the grown size exactly to the real scene-2 heart's rendered
+      // width (not its live heartbeat-transform width, which pulses) so
+      // there's no visible pop at the cut between the two hearts.
+      var realHeart = document.querySelector('.heart-scale');
+      if(realHeart){
+        var realWidth = parseFloat(getComputedStyle(realHeart).width);
+        var portalHeartWidth = parseFloat(getComputedStyle(portalHeart).width);
+        if(realWidth && portalHeartWidth){
+          portalHeart.style.setProperty('--grow-scale', realWidth / portalHeartWidth);
+        }
+      }
 
       portal.classList.add('expand');
       setTimeout(function(){ portalHeart.classList.add('grow'); }, 180);
@@ -794,6 +943,44 @@
     starsFrag.appendChild(st);
   }
   starsWrap.appendChild(starsFrag);
+
+  // ---- Scene 4: reply form (Web3Forms) ----
+  var replyForm = document.getElementById('replyForm');
+  var replySubmit = document.getElementById('replySubmit');
+  var replySubmitLabel = document.getElementById('replySubmitLabel');
+  var replyStatus = document.getElementById('replyStatus');
+
+  replyForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    replySubmit.disabled = true;
+    replySubmitLabel.textContent = 'Sending...';
+    replyStatus.textContent = '';
+    replyStatus.className = 'reply-status';
+
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: new FormData(replyForm)
+    })
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        if(data.success){
+          replyStatus.textContent = "Sent! Ahnaf will see it soon.";
+          replyStatus.className = 'reply-status success';
+          replyForm.reset();
+        } else {
+          throw new Error(data.message || 'Something went wrong.');
+        }
+      })
+      .catch(function(){
+        replyStatus.textContent = 'Failed to send — email ahnafclash17@gmail.com directly instead.';
+        replyStatus.className = 'reply-status error';
+      })
+      .finally(function(){
+        replySubmit.disabled = false;
+        replySubmitLabel.textContent = 'Send reply';
+      });
+  });
 
 })();
 </script>
