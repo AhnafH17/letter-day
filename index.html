@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Letter, For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Mrs+Saint+Delafield&family=Noto+Serif+Bengali:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:      #fdf5e6;
+    --parchment-deep: #eaddb9;
+    --parchment-vign:  #e3d4a9;
+    --ink:            #43291a;
+    --ink-soft:       #6b5138;
+    --maroon:         #9c1c32;
+    --maroon-deep:    #7a1526;
+    --gold:           #b8862c;
+    --leaf:           #3f6b47;
+    --leaf-deep:      #2c4d33;
+    --shadow-ink:     74, 41, 26;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+
+  html{ -webkit-text-size-adjust:100%; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.35), transparent 60%),
+      radial-gradient(ellipse at 50% 100%, var(--parchment-vign), var(--parchment-deep) 70%);
+    font-family:'Merriweather', Georgia, 'Times New Roman', serif;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:clamp(20px, 5vw, 64px) clamp(14px, 4vw, 40px);
+  }
+
+  /* ---------- decorative asset defs (hidden) ---------- */
+  .asset-defs{ position:absolute; width:0; height:0; overflow:hidden; }
+
+  .motif-ink{ fill:none; stroke:var(--maroon); stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round; }
+  .motif-dot{ fill:var(--maroon); stroke:none; }
+  .motif-rule{ stroke:var(--maroon); stroke-width:1; opacity:.55; }
+  .motif-ring{ fill:none; stroke:var(--maroon); stroke-width:1; opacity:.5; stroke-dasharray:1 4; stroke-linecap:round; }
+  .motif-gold{ fill:var(--gold); stroke:none; }
+
+  /* ---------- the letter (paper) ---------- */
+  .letter{
+    position:relative;
+    width:100%;
+    max-width:700px;
+    background:var(--parchment);
+    border-radius:3px;
+    box-shadow:
+      0 1px 1px rgba(var(--shadow-ink), .08),
+      0 10px 24px rgba(var(--shadow-ink), .16),
+      0 32px 60px -20px rgba(var(--shadow-ink), .35);
+    overflow:hidden;
+    opacity:0;
+    transform:translateY(14px);
+    animation:letterArrive 1s cubic-bezier(.22,.8,.32,1) .1s forwards;
+  }
+
+  @keyframes letterArrive{
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .letter::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background-image:
+      radial-gradient(rgba(var(--shadow-ink),.05) 1px, transparent 1px),
+      radial-gradient(rgba(var(--shadow-ink),.04) 1px, transparent 1px);
+    background-size:3px 3px, 7px 7px;
+    background-position:0 0, 2px 4px;
+    opacity:.5;
+  }
+
+  /* ---------- alpana border ---------- */
+  .alpana-strip{ position:absolute; z-index:1; pointer-events:none; color:var(--maroon); }
+  .alpana-strip--top{ top:0; left:0; width:100%; height:32px; }
+  .alpana-strip--bottom{ bottom:0; left:0; width:100%; height:32px; transform:scaleY(-1); }
+  .alpana-strip--left{ top:0; left:0; width:32px; height:100%; }
+  .alpana-strip--right{ top:0; right:0; width:32px; height:100%; transform:scaleX(-1); }
+
+  .alpana-corner{ position:absolute; z-index:1; pointer-events:none; width:clamp(46px,9vw,62px); height:clamp(46px,9vw,62px); }
+  .corner--tl{ top:0; left:0; }
+  .corner--tr{ top:0; right:0; transform:scaleX(-1); }
+  .corner--bl{ bottom:0; left:0; transform:scaleY(-1); }
+  .corner--br{ bottom:0; right:0; transform:scale(-1,-1); }
+
+  /* ---------- content ---------- */
+  .letter-content{
+    position:relative;
+    z-index:2;
+    padding:clamp(52px,9vw,76px) clamp(30px,7.5vw,68px) clamp(44px,8vw,68px);
+  }
+
+  .letter-date{
+    text-align:right;
+    font-style:italic;
+    font-size:.8rem;
+    color:var(--ink-soft);
+    letter-spacing:.02em;
+    margin:0 0 clamp(8px,2vw,16px);
+  }
+
+  /* ---------- bloom animation ---------- */
+  .bloom-wrap{
+    display:flex;
+    justify-content:center;
+    margin-bottom:4px;
+  }
+  .bloom{
+    width:clamp(118px,26vw,168px);
+    height:auto;
+    overflow:visible;
+  }
+
+  .bloom-ground{ fill:var(--leaf-deep); opacity:.16; }
+
+  .bloom-stem{
+    fill:none;
+    stroke:var(--leaf);
+    stroke-width:3.2;
+    stroke-linecap:round;
+    stroke-dasharray:160;
+    stroke-dashoffset:160;
+    animation:growStem 1.1s ease-out .15s forwards;
+  }
+
+  .bloom-leaf{
+    fill:var(--leaf);
+    opacity:0;
+    transform:scale(0);
+  }
+  .bloom-leaf-left{
+    transform-origin:112px 191px;
+    animation:unfurlLeaf .7s cubic-bezier(.3,1.4,.6,1) .75s forwards;
+  }
+  .bloom-leaf-right{
+    transform-origin:110px 158px;
+    animation:unfurlLeaf .7s cubic-bezier(.3,1.4,.6,1) .95s forwards;
+  }
+
+  .petal{
+    fill:var(--maroon);
+    transform-origin:0 0;
+    transform:scale(.1);
+    opacity:0;
+    animation:bloomPetal .6s cubic-bezier(.34,1.56,.64,1) forwards;
+  }
+  .petal-tip{ fill:var(--maroon-deep); opacity:.55; }
+
+  .bloom-center{
+    fill:var(--gold);
+    transform-origin:0 0;
+    transform:scale(0);
+    opacity:0;
+    animation:bloomCenter .5s ease-out 2.55s forwards;
+  }
+
+  @keyframes growStem{ to{ stroke-dashoffset:0; } }
+  @keyframes unfurlLeaf{ to{ opacity:1; transform:scale(1); } }
+  @keyframes bloomPetal{ to{ opacity:1; transform:scale(1); } }
+  @keyframes bloomCenter{ to{ opacity:1; transform:scale(1); } }
+
+  /* ---------- Bengali accent ---------- */
+  .bengali-accent{
+    text-align:center;
+    margin:2px 0 clamp(22px,4vw,34px);
+    color:var(--maroon-deep);
+  }
+  .bengali-accent .bn{
+    display:block;
+    font-family:'Noto Serif Bengali', 'Merriweather', serif;
+    font-size:1.35rem;
+    font-weight:500;
+  }
+  .bengali-accent .gloss{
+    display:block;
+    font-style:italic;
+    font-size:.75rem;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+
+  /* ---------- typography ---------- */
+  .greeting{
+    font-family:'Cormorant Garamond', Georgia, serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:clamp(24px, 2vw + 16px, 30px);
+    color:var(--maroon-deep);
+    margin:0 0 clamp(18px,3vw,26px);
+  }
+
+  .letter-body p{
+    margin:0 0 1.5em;
+    font-size:clamp(16px, .5vw + 15px, 17.5px);
+    line-height:1.8;
+    color:var(--ink);
+  }
+
+  .letter-body p:last-child{ margin-bottom:0; }
+
+  .closing{
+    margin-top:clamp(32px,6vw,48px);
+    text-align:right;
+  }
+
+  .closing .valediction{
+    font-family:'Cormorant Garamond', Georgia, serif;
+    font-style:italic;
+    font-size:1.05rem;
+    color:var(--ink-soft);
+    margin:0 0 4px;
+  }
+
+  .signature{
+    font-family:'Mrs Saint Delafield', 'Brush Script MT', cursive;
+    font-size:clamp(34px, 5vw + 12px, 50px);
+    color:var(--maroon-deep);
+    line-height:1;
+    margin:0;
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .letter{ animation:none; opacity:1; transform:none; }
+    .bloom-stem{ animation:none; stroke-dashoffset:0; }
+    .bloom-leaf{ animation:none; opacity:1; transform:scale(1); }
+    .petal{ animation:none; opacity:1; transform:scale(1); }
+    .bloom-center{ animation:none; opacity:1; transform:scale(1); }
+  }
+
+  /* ---------- small screens ---------- */
+  @media (max-width:420px){
+    .closing{ text-align:center; }
+    .letter-date{ text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hidden defs: alpana border motif, corner medallion, tiling patterns -->
+<svg class="asset-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <g id="alpanaMotif">
+      <line class="motif-rule" x1="0" y1="2" x2="60" y2="2"/>
+      <line class="motif-rule" x1="0" y1="32" x2="60" y2="32"/>
+      <path class="motif-ink" d="M18,9 C26,9 30,16 27,23 C25,28 19,30 13,27 C9,25 8,20 11,16 C13,13 16,14 15,17 C14,19 16,21 18,19 C21,16 20,11 18,9 Z"/>
+      <circle class="motif-dot" cx="36" cy="17" r="1.6"/>
+      <g transform="translate(50,17)">
+        <ellipse class="motif-ink" rx="2" ry="4.2"/>
+        <ellipse class="motif-ink" rx="2" ry="4.2" transform="rotate(90)"/>
+        <ellipse class="motif-ink" rx="2" ry="4.2" transform="rotate(45)"/>
+        <ellipse class="motif-ink" rx="2" ry="4.2" transform="rotate(135)"/>
+        <circle class="motif-dot" r="1.4"/>
+      </g>
+    </g>
+
+    <g id="alpanaCorner">
+      <circle class="motif-ring" cx="35" cy="35" r="26"/>
+      <path class="motif-ink" transform="rotate(0 35 35)"   d="M35,35 C31,28 31,15 35,8 C39,15 39,28 35,35 Z"/>
+      <path class="motif-ink" transform="rotate(45 35 35)"  d="M35,35 C31,28 31,15 35,8 C39,15 39,28 35,35 Z"/>
+      <path class="motif-ink" transform="rotate(90 35 35)"  d="M35,35 C31,28 31,15 35,8 C39,15 39,28 35,35 Z"/>
+      <path class="motif-ink" transform="rotate(135 35 35)" d="M35,35 C31,28 31,15 35,8 C39,15 39,28 35,35 Z"/>
+      <path class="motif-ink" transform="rotate(180 35 35)" d="M35,35 C31,28 31,15 35,8 C39,15 39,28 35,35 Z"/>
+      <path class="motif-ink" transform="rotate(225 35 35)" d="M35,35 C31,28 31,15 35,8 C39,15 39,28 35,35 Z"/>
+      <path class="motif-ink" transform="rotate(270 35 35)" d="M35,35 C31,28 31,15 35,8 C39,15 39,28 35,35 Z"/>
+      <path class="motif-ink" transform="rotate(315 35 35)" d="M35,35 C31,28 31,15 35,8 C39,15 39,28 35,35 Z"/>
+      <circle class="motif-gold" cx="35" cy="35" r="4.2"/>
+    </g>
+
+    <pattern id="alpanaH" patternUnits="userSpaceOnUse" width="60" height="32">
+      <use href="#alpanaMotif" xlink:href="#alpanaMotif"/>
+    </pattern>
+    <pattern id="alpanaV" patternUnits="userSpaceOnUse" width="60" height="32" patternTransform="rotate(90)">
+      <use href="#alpanaMotif" xlink:href="#alpanaMotif"/>
+    </pattern>
+  </defs>
+</svg>
+
+<main class="letter">
+
+  <!-- alpana border -->
+  <svg class="alpana-strip alpana-strip--top" aria-hidden="true"><rect width="100%" height="100%" fill="url(#alpanaH)"/></svg>
+  <svg class="alpana-strip alpana-strip--bottom" aria-hidden="true"><rect width="100%" height="100%" fill="url(#alpanaH)"/></svg>
+  <svg class="alpana-strip alpana-strip--left" aria-hidden="true"><rect width="100%" height="100%" fill="url(#alpanaV)"/></svg>
+  <svg class="alpana-strip alpana-strip--right" aria-hidden="true"><rect width="100%" height="100%" fill="url(#alpanaV)"/></svg>
+
+  <svg class="alpana-corner corner--tl" viewBox="0 0 70 70" aria-hidden="true"><use href="#alpanaCorner" xlink:href="#alpanaCorner"/></svg>
+  <svg class="alpana-corner corner--tr" viewBox="0 0 70 70" aria-hidden="true"><use href="#alpanaCorner" xlink:href="#alpanaCorner"/></svg>
+  <svg class="alpana-corner corner--bl" viewBox="0 0 70 70" aria-hidden="true"><use href="#alpanaCorner" xlink:href="#alpanaCorner"/></svg>
+  <svg class="alpana-corner corner--br" viewBox="0 0 70 70" aria-hidden="true"><use href="#alpanaCorner" xlink:href="#alpanaCorner"/></svg>
+
+  <div class="letter-content">
+
+    <p class="letter-date">[Date]</p>
+
+    <div class="bloom-wrap">
+      <svg class="bloom" viewBox="0 0 220 250" aria-hidden="true">
+        <ellipse class="bloom-ground" cx="110" cy="228" rx="44" ry="6"/>
+        <path class="bloom-stem" d="M110,228 C108,188 112,148 110,98"/>
+        <path class="bloom-leaf bloom-leaf-left"  d="M110,191 C90,186 72,171 70,151 C95,153 110,169 110,191 Z"/>
+        <path class="bloom-leaf bloom-leaf-right" d="M110,158 C130,153 148,140 150,122 C126,124 110,138 110,158 Z"/>
+
+        <g transform="translate(110,88)">
+          <g class="bloom-petals">
+            <g transform="rotate(0)"><path class="petal" style="animation-delay:1.30s" d="M0,0 C6,-13 4,-32 0,-45 C-4,-32 -6,-13 0,0 Z"/></g>
+            <g transform="rotate(45)"><path class="petal" style="animation-delay:1.39s" d="M0,0 C6,-13 4,-32 0,-45 C-4,-32 -6,-13 0,0 Z"/></g>
+            <g transform="rotate(90)"><path class="petal" style="animation-delay:1.48s" d="M0,0 C6,-13 4,-32 0,-45 C-4,-32 -6,-13 0,0 Z"/></g>
+            <g transform="rotate(135)"><path class="petal" style="animation-delay:1.57s" d="M0,0 C6,-13 4,-32 0,-45 C-4,-32 -6,-13 0,0 Z"/></g>
+            <g transform="rotate(180)"><path class="petal" style="animation-delay:1.66s" d="M0,0 C6,-13 4,-32 0,-45 C-4,-32 -6,-13 0,0 Z"/></g>
+            <g transform="rotate(225)"><path class="petal" style="animation-delay:1.75s" d="M0,0 C6,-13 4,-32 0,-45 C-4,-32 -6,-13 0,0 Z"/></g>
+            <g transform="rotate(270)"><path class="petal" style="animation-delay:1.84s" d="M0,0 C6,-13 4,-32 0,-45 C-4,-32 -6,-13 0,0 Z"/></g>
+            <g transform="rotate(315)"><path class="petal" style="animation-delay:1.93s" d="M0,0 C6,-13 4,-32 0,-45 C-4,-32 -6,-13 0,0 Z"/></g>
+          </g>
+          <circle class="bloom-center" r="7.5"/>
+        </g>
+      </svg>
+    </div>
+
+    <p class="bengali-accent">
+      <span class="bn" lang="bn">ভালোবাসি</span>
+      <span class="gloss">bhalobashi — I love you</span>
+    </p>
+
+    <h1 class="greeting">Dear [Name],</h1>
+
+    <div class="letter-body">
+      <p>There is a particular hush that falls over the city just before the rain — the sky turns the colour of old brass, the koel goes quiet, and everyone on the street looks up at once. I think of you in that hush. I think of you the way the first drop feels on skin that has been waiting for it all summer.</p>
+
+      <p>You have become woven into the small, ordinary hours of my days — the second cup of cha that's really just an excuse to sit a little longer, the shiuli flowers I've noticed have started falling again, the songs that used to be background noise and are now unmistakably ours. I did not plan to love you this completely. It happened the way the monsoon happens — slowly, and then all at once.</p>
+
+      <p>So this letter is not really news. You already know. But some things deserve to be written down anyway, in ink, on paper that will yellow and soften with time — the way I hope we do. However far the tide carries us, know that some part of me is always walking home to you.</p>
+    </div>
+
+    <div class="closing">
+      <p class="valediction">Forever yours,</p>
+      <p class="signature">Ahnaf</p>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>
