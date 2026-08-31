@@ -896,8 +896,8 @@
     var wordSegmenter = new Intl.Segmenter('bn', { granularity: 'word' });
     var paragraphs = document.querySelectorAll('.letter-text p');
     var cursor = 900;   // ms — matches the first paragraph's old fixed delay
-    var perChar = 17;   // ms between each letter appearing
-    var paraGap = 350;  // ms pause between paragraphs
+    var perChar = 7;    // ms between each letter appearing
+    var paraGap = 150;  // ms pause between paragraphs
 
     paragraphs.forEach(function(p){
       var frag = document.createDocumentFragment();
