@@ -6,7 +6,7 @@
 <title>Something I Have to Say</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --maroon:      #9c1c32;
@@ -316,29 +316,28 @@
     cursor:pointer;
   }
   .letter-text{
-    font-family:'Tiro Bangla', 'Noto Serif Bengali', serif;
+    font-family:'Noto Serif Bengali', serif;
+    font-weight:700;
     color:#3a2312;
-    font-size:clamp(16px,2.6vw,19px);
-    line-height:1.95;
+    font-size:clamp(20px,3.6vw,26px);
+    line-height:1.85;
   }
   .letter-text p{
     position:relative;
     margin:0 0 1.3em;
     opacity:0;
-    transform:translateY(10px);
+    transform:translateY(5px);
     background-image:repeating-linear-gradient(to bottom,
-      transparent 0, transparent calc(1.95em - 1px),
-      rgba(58,35,18,.2) calc(1.95em - 1px), rgba(58,35,18,.2) 1.95em);
+      transparent 0, transparent calc(1.85em - 1px),
+      rgba(58,35,18,.2) calc(1.85em - 1px), rgba(58,35,18,.2) 1.85em);
   }
   .scene-letter.active .letter-text p{
-    animation:inkReveal .9s ease-out forwards;
+    animation:inkReveal .7s ease-out forwards;
   }
   .letter-text p:nth-child(1){ animation-delay:.9s !important; }
   .letter-text p:nth-child(2){ animation-delay:1.3s !important; }
   .letter-text p:nth-child(3){ animation-delay:1.7s !important; }
   .letter-text p:nth-child(4){ animation-delay:2.1s !important; }
-  .letter-text p:nth-child(5){ animation-delay:2.5s !important; }
-  .letter-text p:nth-child(6){ animation-delay:2.9s !important; }
   @keyframes inkReveal{ to{ opacity:1; transform:translateY(0); } }
 
   /* per-grapheme "handwriting" reveal — used when the JS segmenter runs;
@@ -354,10 +353,10 @@
     opacity:0;
   }
   .scene-letter.active .g{
-    animation:inkWrite .35s ease-out forwards;
+    animation:inkWrite .25s ease-out forwards;
   }
   @keyframes inkWrite{
-    from{ opacity:0; transform:translateY(3px); }
+    from{ opacity:0; transform:translateY(1.5px); }
     to{ opacity:1; transform:translateY(0); }
   }
 
@@ -374,7 +373,7 @@
     padding:6px 10px;
     cursor:pointer;
   }
-  .scene-letter.active .letter-cta{ animation:inkReveal .9s ease-out 3.3s forwards; }
+  .scene-letter.active .letter-cta{ animation:inkReveal .7s ease-out 2.5s forwards; }
 
   @media (prefers-reduced-motion:reduce){
     .drip{ display:none; }
@@ -537,10 +536,8 @@
     <div class="paper" id="letterPaper">
       <div class="letter-text" lang="bn">
         <p>প্রিয় [Name],</p>
-        <p>দু'মাস আগে, একটা সাধারণ বিকেলে, তোমাকে প্রথম দেখেছিলাম। কিছুই বলা হয়নি সেদিন, তবু সেই মুহূর্তটা আজও চোখের সামনে ভাসে।</p>
-        <p>তারপর থেকে অনেক চেষ্টা করেছি ভুলে যাওয়ার, কিন্তু মন মানেনি। রোজ রাতে ঘুমাতে যাওয়ার আগে, ব্যস্ত দিনের ফাঁকে, হঠাৎ করেই তোমার মুখটা মনে পড়ে যায়।</p>
-        <p>জানি না তুমি আমাকে চেনো কিনা, জানি না এই কথাগুলো শুনে তুমি কী ভাববে। তবু চুপ করে থাকতে পারলাম না — কিছু অনুভূতি লুকিয়ে রাখলে বুকের ভেতর ভারী হয়ে যায়।</p>
-        <p>তোমাকে ভালো লেগেছে, ভীষণভাবে। আর এই ছোট্ট চিঠিটা শুধু এটুকু বলার জন্য — তোমার জীবনে একটু জায়গা চাই, তোমাকে কাছ থেকে জানার সুযোগ চাই।</p>
+        <p>দু'মাস আগে একবার দেখেছিলাম তোমাকে। তারপর থেকে আর ভুলতে পারিনি।</p>
+        <p>জানি না তুমি আমাকে চেনো কিনা, তবু এটা না বলে থাকতে পারলাম না — তোমাকে ভালো লেগেছে, ভীষণভাবে।</p>
         <p class="letter-sign">ইতি,<br>আহনাফ</p>
       </div>
     </div>
