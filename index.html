@@ -80,6 +80,32 @@
   .progress[data-scene="0"] span{ background:rgba(74,41,26,.25); }
   .progress[data-scene="0"] span:nth-child(1){ background:var(--maroon); }
 
+  /* back button */
+  .back-btn{
+    position:fixed;
+    top:calc(env(safe-area-inset-top) + 16px);
+    left:calc(env(safe-area-inset-left) + 16px);
+    z-index:60;
+    width:42px; height:42px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.3);
+    background:rgba(0,0,0,.32);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    padding:0;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+    transition:transform .25s, opacity .25s;
+  }
+  .back-btn svg{ width:18px; height:18px; }
+  .back-btn:hover{ transform:scale(1.07); }
+  .back-btn:active{ transform:scale(.94); }
+  .back-btn[hidden]{ display:none; }
+
   /* shared hint / chevron */
   .hint{
     font-size:clamp(11px,2vw,13px);
@@ -296,9 +322,13 @@
     line-height:1.95;
   }
   .letter-text p{
+    position:relative;
     margin:0 0 1.3em;
     opacity:0;
     transform:translateY(10px);
+    background-image:repeating-linear-gradient(to bottom,
+      transparent 0, transparent calc(1.95em - 1px),
+      rgba(58,35,18,.2) calc(1.95em - 1px), rgba(58,35,18,.2) 1.95em);
   }
   .scene-letter.active .letter-text p{
     animation:inkReveal .9s ease-out forwards;
@@ -310,6 +340,26 @@
   .letter-text p:nth-child(5){ animation-delay:2.5s !important; }
   .letter-text p:nth-child(6){ animation-delay:2.9s !important; }
   @keyframes inkReveal{ to{ opacity:1; transform:translateY(0); } }
+
+  /* per-grapheme "handwriting" reveal — used when the JS segmenter runs;
+     see prepareHandwriting() below. Falls back to the paragraph fade
+     above when Intl.Segmenter isn't available or motion is reduced. */
+  .letter-text p.js-handwritten{
+    opacity:1 !important;
+    transform:none !important;
+    animation:none !important;
+  }
+  .g{
+    display:inline-block;
+    opacity:0;
+  }
+  .scene-letter.active .g{
+    animation:inkWrite .35s ease-out forwards;
+  }
+  @keyframes inkWrite{
+    from{ opacity:0; transform:translateY(3px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
 
   .letter-sign{ text-align:right; margin-top:.6em; }
 
@@ -329,6 +379,7 @@
   @media (prefers-reduced-motion:reduce){
     .drip{ display:none; }
     .letter-text p, .letter-cta{ animation:none !important; opacity:1 !important; transform:none !important; }
+    .g{ animation:none !important; opacity:1 !important; transform:none !important; }
   }
 
   /* ============ SCENE 4 — AVATAR ============ */
@@ -413,6 +464,10 @@
 </style>
 </head>
 <body>
+
+<button class="back-btn" id="backBtn" aria-label="Go back" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4 L7 12 L15 20"/></svg>
+</button>
 
 <div class="progress" id="progress" data-scene="0">
   <span></span><span></span><span></span><span></span>
@@ -525,6 +580,7 @@
   var stage    = document.getElementById('stage');
   var scenes   = document.querySelectorAll('.scene');
   var progress = document.getElementById('progress');
+  var backBtn  = document.getElementById('backBtn');
   var current  = 0;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -546,14 +602,21 @@
   }
 
   function goTo(index){
-    if(index === current) return;
+    if(index === current || index < 0 || index >= scenes.length) return;
     current = index;
     applyTransform(true);
     progress.setAttribute('data-scene', String(index));
+    backBtn.hidden = (index === 0);
     scenes.forEach(function(s,i){ s.setAttribute('aria-hidden', i === index ? 'false' : 'true'); });
     var activeScene = scenes[index];
     if(activeScene) activeScene.classList.add('active');
+    if(index === 0){
+      // reset the envelope so it's ready to be opened again
+      envelope.classList.remove('open');
+    }
   }
+
+  backBtn.addEventListener('click', function(){ goTo(current - 1); });
 
   // ---- Scene 1: envelope ----
   var envelope = document.getElementById('envelope');
@@ -578,6 +641,62 @@
   }
   letterPaper.addEventListener('click', advanceFromLetter);
   document.getElementById('letterCta').addEventListener('click', function(){ goTo(3); });
+
+  // Break the letter into individual graphemes so it reveals character-by-
+  // character like it's being handwritten, instead of fading in as whole
+  // paragraphs. Uses Intl.Segmenter's grapheme granularity so Bengali
+  // conjuncts/matras stay intact as single units — never split mid-glyph.
+  (function prepareHandwriting(){
+    if(reduceMotion || typeof Intl === 'undefined' || typeof Intl.Segmenter !== 'function'){
+      return; // keep the plain paragraph-fade CSS already defined as a fallback
+    }
+    var graphemeSegmenter = new Intl.Segmenter('bn', { granularity: 'grapheme' });
+    var wordSegmenter = new Intl.Segmenter('bn', { granularity: 'word' });
+    var paragraphs = document.querySelectorAll('.letter-text p');
+    var cursor = 900;   // ms — matches the first paragraph's old fixed delay
+    var perChar = 17;   // ms between each letter appearing
+    var paraGap = 350;  // ms pause between paragraphs
+
+    paragraphs.forEach(function(p){
+      var frag = document.createDocumentFragment();
+      Array.prototype.forEach.call(p.childNodes, function(node){
+        if(node.nodeType === Node.TEXT_NODE){
+          // Split into words first so a line can only break at whitespace —
+          // if every letter were its own inline-block, the browser would
+          // treat every letter boundary as a break opportunity too, and
+          // words would fracture mid-glyph at the end of a line.
+          var words = Array.from(wordSegmenter.segment(node.data));
+          words.forEach(function(w){
+            if(/^\s+$/.test(w.segment)){
+              frag.appendChild(document.createTextNode(w.segment));
+              cursor += perChar;
+              return;
+            }
+            var atom = document.createElement('span');
+            atom.style.display = 'inline-block';
+            Array.from(graphemeSegmenter.segment(w.segment)).forEach(function(seg){
+              var span = document.createElement('span');
+              span.className = 'g';
+              span.textContent = seg.segment;
+              span.style.animationDelay = cursor + 'ms';
+              cursor += perChar;
+              atom.appendChild(span);
+            });
+            frag.appendChild(atom);
+          });
+        } else {
+          frag.appendChild(node.cloneNode(true));
+        }
+      });
+      p.innerHTML = '';
+      p.appendChild(frag);
+      p.classList.add('js-handwritten');
+      cursor += paraGap;
+    });
+
+    var letterCta = document.getElementById('letterCta');
+    if(letterCta) letterCta.style.animationDelay = (cursor + 250) + 'ms';
+  })();
 
   // ---- Scene 4: pixel avatar ----
   var PIXEL_ROWS = [
