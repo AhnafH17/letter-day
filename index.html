@@ -185,6 +185,18 @@
     width:clamp(220px,50vw,340px);
     aspect-ratio:3/2;
   }
+  @keyframes envelopeLeave{
+    0%{ transform:scale(1); opacity:1; }
+    30%{ transform:scale(1.18); opacity:1; }
+    55%{ transform:scale(.82); opacity:1; }
+    100%{ transform:scale(0); opacity:0; }
+  }
+  .envelope.leaving{
+    animation:envelopeLeave .7s cubic-bezier(.4,0,.2,1) forwards;
+  }
+  @media (prefers-reduced-motion:reduce){
+    .envelope.leaving{ animation:none !important; opacity:0; }
+  }
   .envelope-shadow{
     position:absolute;
     left:8%; right:8%; bottom:-14px;
@@ -729,14 +741,8 @@
         <input type="hidden" name="access_key" value="eecb91c7-df3e-459b-b194-7972ccfd29ee">
         <input type="hidden" name="subject" value="A reply to your letter">
         <input type="hidden" name="from_name" value="Letter Day">
+        <input type="hidden" name="name" value="Aronima">
         <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
-
-        <div class="reply-field">
-          <label for="replyName">Your name</label>
-          <div class="reply-input-wrap">
-            <input type="text" id="replyName" name="name" placeholder="Your name" autocomplete="name">
-          </div>
-        </div>
 
         <div class="reply-field">
           <label for="replyMessage">Your reply <span aria-hidden="true">*</span></label>
@@ -796,7 +802,7 @@
     if(activeScene) activeScene.classList.add('active');
     if(index === 0){
       // reset the envelope so it's ready to be opened again
-      envelope.classList.remove('open');
+      envelope.classList.remove('open', 'leaving');
       resetPortal();
     }
   }
@@ -850,6 +856,7 @@
       }
 
       portal.classList.add('expand');
+      envelope.classList.add('leaving');
       setTimeout(function(){ portalHeart.classList.add('grow'); }, 180);
 
       setTimeout(function(){
