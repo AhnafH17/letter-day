@@ -423,17 +423,10 @@
     align-items:center;
     z-index:2;
   }
-  .pixel-avatar-holder{
-    width:clamp(140px,26vw,210px);
-    filter:drop-shadow(0 14px 22px rgba(0,0,0,.4));
-  }
-  #pixelSvg{ width:100%; height:auto; shape-rendering:crispEdges; display:block; }
-  #photoCanvas{
-    width:clamp(140px,26vw,210px);
+  .pixel-avatar-img{
+    width:clamp(160px,32vw,240px);
     height:auto;
-    image-rendering:pixelated;
-    display:none;
-    border-radius:6px;
+    display:block;
     filter:drop-shadow(0 14px 22px rgba(0,0,0,.4));
   }
 
@@ -571,16 +564,7 @@
     <div class="stars" aria-hidden="true" id="stars"></div>
 
     <div class="avatar-wrap">
-      <div class="pixel-avatar-holder">
-        <svg id="pixelSvg" viewBox="0 0 14 20" preserveAspectRatio="xMidYMid meet"></svg>
-      </div>
-      <!--
-        To use a real photo instead of the pixel-art illustration above:
-        add a file named "sender-photo.jpg" next to this index.html.
-        The script below will detect it, pixelate it onto #photoCanvas
-        automatically, and swap it in — no other changes needed.
-      -->
-      <canvas id="photoCanvas" width="60" height="60"></canvas>
+      <img class="pixel-avatar-img" src="me.png" alt="Pixel-art illustration of the sender holding a flower">
 
       <div class="chat-cloud" aria-label="typing">
         <span class="dot"></span><span class="dot"></span><span class="dot"></span>
@@ -743,69 +727,7 @@
     if(letterCta) letterCta.style.animationDelay = (cursor + 250) + 'ms';
   })();
 
-  // ---- Scene 4: pixel avatar ----
-  var PIXEL_ROWS = [
-    {y:0,  seg:[[4,9,'h']]},
-    {y:1,  seg:[[3,10,'h']]},
-    {y:2,  seg:[[3,3,'h'],[4,9,'s'],[10,10,'h']]},
-    {y:3,  seg:[[3,3,'h'],[4,4,'s'],[5,5,'e'],[6,7,'s'],[8,8,'e'],[9,9,'s'],[10,10,'h']]},
-    {y:4,  seg:[[3,3,'h'],[4,9,'s'],[10,10,'h']]},
-    {y:5,  seg:[[4,9,'s']]},
-    {y:6,  seg:[[6,7,'s']]},
-    {y:7,  seg:[[5,8,'w']]},
-    {y:8,  seg:[[4,9,'w'],[10,11,'w']]},
-    {y:9,  seg:[[3,9,'w'],[10,11,'w'],[12,12,'s']]},
-    {y:10, seg:[[3,9,'w'],[10,10,'w'],[11,11,'l'],[12,12,'r'],[13,13,'y']]},
-    {y:11, seg:[[3,9,'w'],[10,10,'s'],[11,11,'k'],[12,12,'y'],[13,13,'r']]},
-    {y:12, seg:[[3,9,'w'],[10,11,'l']]},
-    {y:13, seg:[[3,10,'w']]},
-    {y:14, seg:[[3,10,'w'],[6,6,'g']]},
-    {y:15, seg:[[2,11,'w']]},
-    {y:16, seg:[[2,2,'d'],[3,10,'w'],[11,11,'d']]},
-    {y:17, seg:[[1,1,'d'],[2,11,'w'],[12,12,'d']]},
-    {y:18, seg:[[4,6,'p'],[8,10,'p']]},
-    {y:19, seg:[[4,6,'f'],[8,10,'f']]}
-  ];
-  var COLORS = { h:'#2b1f18', s:'#e3a876', e:'#241812', w:'#f7f4ea', d:'#ddd7c4',
-                 g:'#c9a227', p:'#e7e1cd', f:'#3a2a1d', r:'#c23b4a', k:'#e8879a',
-                 y:'#e8b93f', l:'#4c7a52' };
-
-  var svgNS = 'http://www.w3.org/2000/svg';
-  var pixelSvg = document.getElementById('pixelSvg');
-  PIXEL_ROWS.forEach(function(row){
-    row.seg.forEach(function(s){
-      var rect = document.createElementNS(svgNS, 'rect');
-      rect.setAttribute('x', s[0]);
-      rect.setAttribute('y', row.y);
-      rect.setAttribute('width', s[1] - s[0] + 1);
-      rect.setAttribute('height', 1);
-      rect.setAttribute('fill', COLORS[s[2]]);
-      pixelSvg.appendChild(rect);
-    });
-  });
-
-  // Optional: swap in a real uploaded photo, pixelated, if present.
-  var photo = new Image();
-  photo.onload = function(){
-    var size = 28;
-    var off = document.createElement('canvas');
-    off.width = size; off.height = size;
-    var offCtx = off.getContext('2d');
-    var side = Math.min(photo.width, photo.height);
-    offCtx.drawImage(photo, (photo.width-side)/2, (photo.height-side)/2, side, side, 0, 0, size, size);
-
-    var canvas = document.getElementById('photoCanvas');
-    var ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(off, 0, 0, size, size, 0, 0, canvas.width, canvas.height);
-
-    document.querySelector('.pixel-avatar-holder').style.display = 'none';
-    canvas.style.display = 'block';
-  };
-  photo.onerror = function(){ /* no photo supplied — keep illustrated placeholder */ };
-  photo.src = 'sender-photo.jpg';
-
-  // twinkling stars
+  // ---- Scene 4: twinkling stars ----
   var starsWrap = document.getElementById('stars');
   var starCount = window.innerWidth < 500 ? 26 : 46;
   var starsFrag = document.createDocumentFragment();
