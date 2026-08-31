@@ -472,48 +472,46 @@
     filter:drop-shadow(0 14px 22px rgba(0,0,0,.4));
   }
 
-  .chat-cloud{
-    position:absolute;
-    top:0%;
-    right:-10%;
+  .message-card{
+    position:relative;
+    z-index:2;
+    width:min(90vw, 420px);
+    margin-top:22px;
     background:#faf6ec;
     color:#3a2312;
-    border-radius:22px;
-    padding:12px 18px;
-    display:flex;
-    align-items:center;
-    gap:5px;
-    box-shadow:0 10px 24px rgba(0,0,0,.28);
-    min-width:56px;
+    border-radius:20px;
+    padding:22px 24px;
+    box-shadow:0 12px 28px rgba(0,0,0,.3);
+    font-family:'Poppins', sans-serif;
+    font-size:.92rem;
+    line-height:1.7;
   }
-  .chat-tail1, .chat-tail2{
+  .message-card .message-name{
+    font-family:'Noto Serif Bengali', serif;
+    font-weight:700;
+    font-size:1.05rem;
+    margin:0 0 12px;
+    color:var(--maroon-deep);
+  }
+  .message-card p{ margin:0 0 12px; }
+  .message-card .message-sign{
+    font-family:'Noto Serif Bengali', serif;
+    font-weight:700;
+    text-align:right;
+    margin:14px 0 0;
+    color:var(--maroon-deep);
+  }
+  .message-tail1, .message-tail2{
     position:absolute;
     background:#faf6ec;
     border-radius:50%;
     box-shadow:0 4px 10px rgba(0,0,0,.2);
   }
-  .chat-tail1{ width:14px; height:14px; left:14%; bottom:-16px; }
-  .chat-tail2{ width:8px; height:8px; left:6%; bottom:-26px; }
-
-  .dot{
-    width:6px; height:6px;
-    border-radius:50%;
-    background:#8a7a63;
-    animation:dotBounce 1.3s ease-in-out infinite;
-  }
-  .dot:nth-child(2){ animation-delay:.18s; }
-  .dot:nth-child(3){ animation-delay:.36s; }
-  @keyframes dotBounce{
-    0%,60%,100%{ transform:translateY(0); opacity:.5; }
-    30%{ transform:translateY(-4px); opacity:1; }
-  }
+  .message-tail1{ width:16px; height:16px; top:-14px; left:50%; margin-left:-26px; }
+  .message-tail2{ width:9px; height:9px; top:-27px; left:50%; margin-left:-34px; }
 
   @media (prefers-reduced-motion:reduce){
-    .star, .dot{ animation:none !important; }
-  }
-
-  @media (max-width:380px){
-    .chat-cloud{ right:-38%; padding:10px 14px; }
+    .star{ animation:none !important; }
   }
 
   /* reply form — sends straight to Ahnaf via Web3Forms */
@@ -712,7 +710,7 @@
       <div class="letter-text" lang="bn">
         <p>প্রিয় [Name],</p>
         <p>দু'মাস আগে একবার দেখেছিলাম তোমাকে। তারপর থেকে আর ভুলতে পারিনি।</p>
-        <p>জানি না তুমি আমাকে চেনো কিনা, তবু এটা না বলে থাকতে পারলাম না — তোমাকে ভালো লেগেছে, ভীষণভাবে।</p>
+        <p>জানি না তুমি আমাকে চেনো কিনা, তবু এটা না বলে থাকতে পারলাম না। তোমাকে ভালো লেগেছে, ভীষণভাবে।</p>
         <p class="letter-sign">ইতি,<br>আহনাফ</p>
       </div>
     </div>
@@ -725,16 +723,19 @@
 
     <div class="avatar-wrap">
       <img class="pixel-avatar-img" src="me.png" alt="Pixel-art illustration of the sender holding a flower">
+    </div>
 
-      <div class="chat-cloud" aria-label="typing">
-        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        <div class="chat-tail1"></div>
-        <div class="chat-tail2"></div>
-      </div>
+    <div class="message-card">
+      <div class="message-tail1"></div>
+      <div class="message-tail2"></div>
+      <p class="message-name" lang="bn">অরুনিমা,</p>
+      <p>I've noticed you around TARC a few times. I think you're really beautiful. Also, from what I've seen so far from your profile, I feel like you're very passionate about your subject and really hardworking. I've looked through all of your projects and they look very aesthetic (I don't understand most of it).</p>
+      <p>I made this website specifically for you, for Letter Day. If you're ever free, I'd love to roam around the campus, maybe grab a drink from the Live Kitchen, and just hang out at Durjoy to get to know you. Would you be down for that?</p>
+      <p class="message-sign" lang="bn">আহনাফ</p>
     </div>
 
     <div class="reply-wrap">
-      <p class="reply-heading">Write back?</p>
+      <p class="reply-heading">Hoping to hear back from you.</p>
       <form class="reply-form" id="replyForm">
         <!-- Web3Forms — same access key/service used on Ahnaf's portfolio
              site, routed to ahnafclash17@gmail.com -->
@@ -980,7 +981,7 @@
         }
       })
       .catch(function(){
-        replyStatus.textContent = 'Failed to send — email ahnafclash17@gmail.com directly instead.';
+        replyStatus.textContent = 'Failed to send. Email ahnafclash17@gmail.com directly instead.';
         replyStatus.className = 'reply-status error';
       })
       .finally(function(){
