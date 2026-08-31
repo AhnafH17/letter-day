@@ -80,6 +80,26 @@
   .progress[data-scene="0"] span{ background:rgba(74,41,26,.25); }
   .progress[data-scene="0"] span:nth-child(1){ background:var(--maroon); }
 
+  /* portal — the "dive into the envelope" transition */
+  .portal{
+    position:fixed;
+    top:0; left:0;
+    width:54px; height:54px;
+    margin:-27px 0 0 -27px;
+    border-radius:50%;
+    background:#050505;
+    transform:scale(0);
+    opacity:1;
+    pointer-events:none;
+    z-index:200;
+    transition:transform .65s cubic-bezier(.55,0,.85,.35);
+  }
+  .portal.expand{ transform:scale(100); }
+  .portal.fade{ transition:opacity .5s ease-out; opacity:0; }
+  @media (prefers-reduced-motion:reduce){
+    .portal{ transition:none !important; }
+  }
+
   /* back button */
   .back-btn{
     position:fixed;
@@ -464,6 +484,8 @@
 </head>
 <body>
 
+<div class="portal" id="portal" aria-hidden="true"></div>
+
 <button class="back-btn" id="backBtn" aria-label="Go back" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4 L7 12 L15 20"/></svg>
 </button>
@@ -598,10 +620,10 @@
     }
   }
 
-  function goTo(index){
+  function goTo(index, instant){
     if(index === current || index < 0 || index >= scenes.length) return;
     current = index;
-    applyTransform(true);
+    applyTransform(!instant);
     progress.setAttribute('data-scene', String(index));
     backBtn.hidden = (index === 0);
     scenes.forEach(function(s,i){ s.setAttribute('aria-hidden', i === index ? 'false' : 'true'); });
@@ -618,10 +640,36 @@
   // ---- Scene 1: envelope ----
   var envelope = document.getElementById('envelope');
   var sealHeart = document.getElementById('sealHeart');
+  var portal = document.getElementById('portal');
   sealHeart.addEventListener('click', function(){
     if(envelope.classList.contains('open')) return;
     envelope.classList.add('open');
-    setTimeout(function(){ goTo(1); }, reduceMotion ? 150 : 850);
+    var openDelay = reduceMotion ? 100 : 850;
+
+    setTimeout(function(){
+      if(reduceMotion){
+        goTo(1);
+        return;
+      }
+      // dive through the envelope's opening: a black portal expands from
+      // the seal's position to fill the screen, we cut to scene 1 behind
+      // it (hidden by the full-black cover), then let it dissolve away —
+      // reads as "going inside" rather than the usual vertical swipe.
+      var rect = sealHeart.getBoundingClientRect();
+      portal.style.left = (rect.left + rect.width / 2) + 'px';
+      portal.style.top = (rect.top + rect.height / 2) + 'px';
+      portal.classList.add('expand');
+
+      setTimeout(function(){
+        goTo(1, true);
+        setTimeout(function(){
+          portal.classList.add('fade');
+          setTimeout(function(){
+            portal.classList.remove('expand', 'fade');
+          }, 550);
+        }, 80);
+      }, 650);
+    }, openDelay);
   });
 
   // ---- Scene 2: beating heart ----
