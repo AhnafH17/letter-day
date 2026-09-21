@@ -447,9 +447,9 @@
     background:linear-gradient(180deg, #2c1f3e 0%, #6a3552 45%, #c97b6d 78%, #e8b96b 100%);
     color:#fff;
     overflow-y:auto;
-    justify-content:center;
-    padding-top:calc(env(safe-area-inset-top) + 24px);
-    padding-bottom:calc(env(safe-area-inset-bottom) + 24px);
+    justify-content:flex-start;
+    padding-top:calc(env(safe-area-inset-top) + 76px);
+    padding-bottom:32px;
   }
   .stars{ position:absolute; inset:0; overflow:hidden; }
   .star{
@@ -507,41 +507,101 @@
     .chat-cloud{ right:-8%; top:-10px; padding:7px 13px; font-size:12.5px; }
   }
 
-  /* status card */
-  .status-wrap{
+  /* reply form — sends straight to Ahnaf via Web3Forms */
+  .reply-wrap{
     position:relative;
     z-index:2;
-    width:min(90vw, 380px);
-    margin-top:clamp(28px,6vh,44px);
+    width:min(90vw, 400px);
+    margin-top:clamp(30px,7vh,52px);
   }
-  .status-card{
+  .reply-heading{
     text-align:center;
-    background:rgba(20,10,22,.65);
-    border:1px solid rgba(201,162,39,.35);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-    border-radius:18px;
-    padding:clamp(20px,4.5vw,26px) clamp(18px,4.5vw,24px);
-    box-shadow:0 12px 32px rgba(0,0,0,.35);
-  }
-  .status-title{
     font-family:'Georgia','Times New Roman',serif;
-    font-size:clamp(18px,3vw,22px);
-    color:#f7efe6;
-    margin:0 0 8px;
-    font-weight:600;
-  }
-  .status-desc{
-    font-size:clamp(13.5px,2.2vw,15px);
-    color:#eccf94;
     font-style:italic;
-    margin:0 0 6px;
+    font-size:clamp(15px,2.4vw,18px);
+    color:#f6e9dc;
+    margin:0 0 16px;
+    opacity:.9;
   }
-  .status-sub{
-    font-size:clamp(12px,1.9vw,13px);
-    color:rgba(250,246,236,.65);
-    margin:0;
-    line-height:1.5;
+  .reply-form{ display:flex; flex-direction:column; gap:13px; }
+  .reply-field label{
+    display:block;
+    font-size:.68rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    font-weight:600;
+    margin-bottom:6px;
+    color:#eccf94;
+  }
+  .reply-input-wrap{
+    position:relative;
+    border-radius:12px;
+    padding:1.5px;
+    background:rgba(201,162,39,.35);
+    transition:background .3s, box-shadow .3s;
+  }
+  .reply-input-wrap:focus-within{
+    background:linear-gradient(135deg,#eccf94,rgba(201,162,39,.75),#eccf94);
+    box-shadow:0 0 22px rgba(201,162,39,.3);
+  }
+  .reply-input-wrap input,
+  .reply-input-wrap textarea{
+    width:100%;
+    padding:11px 14px;
+    background:rgba(20,10,22,.78);
+    border:none;
+    border-radius:10.5px;
+    color:#faf6ec;
+    font-family:'Poppins', sans-serif;
+    font-size:.9rem;
+    outline:none;
+    display:block;
+  }
+  .reply-input-wrap input::placeholder,
+  .reply-input-wrap textarea::placeholder{ color:rgba(250,246,236,.35); }
+  .reply-input-wrap textarea{ min-height:96px; resize:vertical; }
+
+  .reply-submit{
+    position:relative;
+    overflow:hidden;
+    align-self:center;
+    margin-top:4px;
+    padding:11px 32px;
+    background:linear-gradient(100deg,var(--maroon) 0%,var(--gold) 50%,var(--maroon) 100%);
+    color:#fff;
+    border:none;
+    border-radius:100px;
+    font-family:'Poppins', sans-serif;
+    font-weight:600;
+    font-size:.85rem;
+    letter-spacing:.03em;
+    cursor:pointer;
+    box-shadow:0 6px 20px rgba(0,0,0,.35);
+    transition:transform .25s;
+  }
+  .reply-submit:hover{ transform:scale(1.05); }
+  .reply-submit:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+  .reply-shimmer{
+    position:absolute; top:0; left:0;
+    width:50%; height:100%;
+    background:linear-gradient(105deg,transparent,rgba(255,255,255,.35),transparent);
+    animation:replyShimmer 2.6s ease-in-out infinite;
+  }
+  @keyframes replyShimmer{
+    0%{ transform:translateX(-100%); }
+    100%{ transform:translateX(200%); }
+  }
+  .reply-status{
+    font-size:.82rem;
+    text-align:center;
+    margin-top:2px;
+    min-height:1.2em;
+  }
+  .reply-status.success{ color:#8fd6a8; }
+  .reply-status.error{ color:#f2a1a1; }
+
+  @media (prefers-reduced-motion:reduce){
+    .reply-shimmer{ animation:none !important; }
   }
 </style>
 </head>
@@ -664,12 +724,31 @@
       </div>
     </div>
 
-    <div class="status-wrap">
-      <div class="status-card">
-        <h2 class="status-title">Update: I got rejected 😢</h2>
-        <p class="status-desc">At least I shot my shot!</p>
-        <p class="status-sub">No regrets. Life goes on.</p>
-      </div>
+    <div class="reply-wrap">
+      <p class="reply-heading">Hoping to hear back from you.</p>
+      <form class="reply-form" id="replyForm">
+        <!-- Web3Forms — same access key/service used on Ahnaf's portfolio
+             site, routed to ahnafclash17@gmail.com -->
+        <input type="hidden" name="access_key" value="eecb91c7-df3e-459b-b194-7972ccfd29ee">
+        <input type="hidden" name="subject" value="A reply to your letter">
+        <input type="hidden" name="from_name" value="Letter Day">
+        <input type="hidden" name="name" value="Aronima">
+        <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+
+        <div class="reply-field">
+          <label for="replyMessage">Your reply <span aria-hidden="true">*</span></label>
+          <div class="reply-input-wrap">
+            <textarea id="replyMessage" name="message" placeholder="Write back..." required></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="reply-submit" id="replySubmit">
+          <span class="reply-shimmer"></span>
+          <span id="replySubmitLabel">Send reply</span>
+        </button>
+
+        <div class="reply-status" id="replyStatus" role="status"></div>
+      </form>
     </div>
   </section>
 
@@ -863,7 +942,43 @@
   }
   starsWrap.appendChild(starsFrag);
 
+  // ---- Scene 4: reply form (Web3Forms) ----
+  var replyForm = document.getElementById('replyForm');
+  var replySubmit = document.getElementById('replySubmit');
+  var replySubmitLabel = document.getElementById('replySubmitLabel');
+  var replyStatus = document.getElementById('replyStatus');
 
+  replyForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    replySubmit.disabled = true;
+    replySubmitLabel.textContent = 'Sending...';
+    replyStatus.textContent = '';
+    replyStatus.className = 'reply-status';
+
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: new FormData(replyForm)
+    })
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        if(data.success){
+          replyStatus.textContent = "Sent! Ahnaf will see it soon.";
+          replyStatus.className = 'reply-status success';
+          replyForm.reset();
+        } else {
+          throw new Error(data.message || 'Something went wrong.');
+        }
+      })
+      .catch(function(){
+        replyStatus.textContent = 'Failed to send. Email ahnafclash17@gmail.com directly instead.';
+        replyStatus.className = 'reply-status error';
+      })
+      .finally(function(){
+        replySubmit.disabled = false;
+        replySubmitLabel.textContent = 'Send reply';
+      });
+  });
 
 })();
 </script>
