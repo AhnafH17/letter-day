@@ -1006,12 +1006,16 @@
       });
   });
 
-  // ---- visit counter (abacus.jasoncameron.dev): +1 on every load; local files/localhost only read ----
+  // ---- visit counter (abacus.jasoncameron.dev): +1 once per browser session (refreshes don't count); local files/localhost only read ----
   var isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  fetch('https://abacus.jasoncameron.dev/' + (isLocal ? 'get' : 'hit') + '/letter-day-ahnafh17/visits')
+  var counted = false;
+  try{ counted = sessionStorage.getItem('visit-counted') === '1'; }catch(e){}
+  var counterAction = (isLocal || counted) ? 'get' : 'hit';
+  fetch('https://abacus.jasoncameron.dev/' + counterAction + '/letter-day-ahnafh17/visits')
     .then(function(res){ return res.ok ? res.json() : Promise.reject(); })
     .then(function(data){
       if(typeof data.value === 'number'){
+        if(counterAction === 'hit'){ try{ sessionStorage.setItem('visit-counted', '1'); }catch(e){} }
         document.getElementById('visitCount').textContent = data.value.toLocaleString();
         document.getElementById('visitCounter').hidden = false;
       }
