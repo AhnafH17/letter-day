@@ -603,6 +603,27 @@
   @media (prefers-reduced-motion:reduce){
     .reply-shimmer{ animation:none !important; }
   }
+
+  /* visit counter (top right, mirrors the back button) */
+  .visit-counter{
+    position:fixed;
+    top:calc(env(safe-area-inset-top) + 20px);
+    right:calc(env(safe-area-inset-right) + 16px);
+    z-index:60;
+    height:34px;
+    padding:0 13px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    border-radius:17px;
+    background:rgba(30,20,15,.6);
+    color:#fff;
+    font-size:13px;
+    font-weight:500;
+    pointer-events:none;
+  }
+  .visit-counter[hidden]{ display:none; }
+  .visit-counter svg{ width:16px; height:16px; }
 </style>
 </head>
 <body>
@@ -613,6 +634,11 @@
 
 <div class="progress" id="progress" data-scene="0">
   <span></span><span></span><span></span><span></span>
+</div>
+
+<div class="visit-counter" id="visitCounter" role="status" aria-label="Visits" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+  <span id="visitCount">0</span>
 </div>
 
 <div class="stage" id="stage">
@@ -979,6 +1005,18 @@
         replySubmitLabel.textContent = 'Send reply';
       });
   });
+
+  // ---- visit counter (abacus.jasoncameron.dev): +1 on every load; local files/localhost only read ----
+  var isLocal = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  fetch('https://abacus.jasoncameron.dev/' + (isLocal ? 'get' : 'hit') + '/letter-day-ahnafh17/visits')
+    .then(function(res){ return res.ok ? res.json() : Promise.reject(); })
+    .then(function(data){
+      if(typeof data.value === 'number'){
+        document.getElementById('visitCount').textContent = data.value.toLocaleString();
+        document.getElementById('visitCounter').hidden = false;
+      }
+    })
+    .catch(function(){ /* counter unreachable: leave it hidden */ });
 
 })();
 </script>
